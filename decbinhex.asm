@@ -38,6 +38,36 @@ section .data
 
 section .text
 
+is_decimal_input_valid:
+	push ebp
+	mov ebp, esp
+	mov ecx, [ebp + 8]
+	sub ecx, 2
+	mov edi, 0
+	mov ebx, 0
+decimal_input_valid_loop:
+	mov dl, [value_entered + edi]
+	cmp dl, [hexadecimal_numbers + ebx]
+	je reset_iterator
+	cmp ebx, 9
+	je decimal_input_is_not_valid
+	inc ebx
+	jmp decimal_input_valid_loop
+reset_iterator:
+	mov ebx, 0
+	cmp edi, ecx
+	jge decimal_input_is_valid
+	inc edi
+	jmp decimal_input_valid_loop
+decimal_input_is_not_valid:
+	mov eax, 0
+	pop ebp
+	ret
+decimal_input_is_valid:
+	mov eax, 1
+	pop ebp
+	ret
+
 power_of_base_16:
 	push ebp
 	mov ebp, esp
@@ -370,6 +400,7 @@ convert_string_to_decimal:
 	mov ecx, 0 
 
 conversion_loop:
+	mov eax, 0
 	mov al, [esi + edi]
 	sub al, 48
 	mul ebx 
@@ -572,6 +603,28 @@ from_decimal_to_decimal:
 	jmp end
 
 from_decimal_to_binary:
+	; Validate input
+	; 1020 is the largest decimal that can be converted into binary
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_decimal_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
+here:	
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	push value_entered
+	call convert_string_to_decimal
+	add esp, 8
+	cmp ecx, 255
+	jg conversion_failed
+	cmp ecx, 0
+	jl conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
