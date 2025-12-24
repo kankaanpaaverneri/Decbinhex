@@ -30,6 +30,8 @@ section .data
 	hexadecimal_letters_length equ $ - hexadecimal_letters
 	hexadecimal_numbers db '0','1','2','3','4','5','6','7','8','9'
 	hexadecimal_numbers_length equ $ - hexadecimal_numbers
+	valid_hexadecimal_values db 'A','B','C','D','E','F','a','b','c','d','e','f','0','1','2','3','4','5','6','7','8','9'
+	valid_hexadecimal_values_length equ $ - valid_hexadecimal_values
 	
 	buffer_for_hexadecimal_values times max_write_length dd 0 
 	pointer_to_binary_string dd 0
@@ -37,6 +39,37 @@ section .data
 	temporary_binary_buffer times 4 db '0'
 
 section .text
+
+is_hexadecimal_input_valid:
+	push ebp
+	mov ebp, esp
+	mov esi, [ebp + 8]
+	sub esi, 2
+	mov edi, 0
+	mov ebx, 0
+	mov ecx, 0
+hexadecimal_input_valid_loop:
+	mov dl, [value_entered + edi]
+	cmp dl, [valid_hexadecimal_values + ebx]
+	je hexadecimal_valid
+	cmp ebx, valid_hexadecimal_values_length
+	jg hexadecimal_input_not_valid
+	inc ebx
+	jmp hexadecimal_input_valid_loop
+hexadecimal_valid:
+	cmp edi, esi
+	jge hexadecimal_sequence_valid
+	inc edi
+	mov ebx, 0
+	jmp hexadecimal_input_valid_loop
+hexadecimal_input_not_valid:
+	mov eax, 0
+	pop ebp
+	ret
+hexadecimal_sequence_valid:
+	mov eax, 1
+	pop ebp
+	ret
 
 is_binary_input_valid:
 	push ebp
@@ -818,6 +851,14 @@ from_hexadecimal_to_decimal:
 	push value_entered
 	call get_message_length
 	add esp, 4
+	push eax
+	call is_hexadecimal_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
+	push value_entered
+	call get_message_length
+	add esp, 4
 	sub eax, 2
 	push eax
 	push value_entered
@@ -883,6 +924,14 @@ hexadecimal_to_decimal_done:
 	jmp end
 
 from_hexadecimal_to_binary:
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_hexadecimal_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -956,6 +1005,14 @@ hexadecimal_to_binary_done:
 	jmp end
 
 from_hexadecimal_to_hexadecimal:
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_hexadecimal_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
