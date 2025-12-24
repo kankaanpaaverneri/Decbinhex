@@ -38,6 +38,35 @@ section .data
 
 section .text
 
+is_binary_input_valid:
+	push ebp
+	mov ebp, esp
+	mov ecx, [ebp + 8]
+	sub ecx, 2
+	mov edi, 0
+	mov ebx, 0
+binary_input_valid_loop:
+	mov dl, [value_entered + edi]
+	cmp dl, '0',
+	je binary_input_valid
+	cmp dl, '1'
+	je binary_input_valid
+	jmp binary_input_not_valid
+
+binary_input_valid:
+	cmp edi, ecx 
+	jge binary_sequence_valid
+	inc edi
+	jmp binary_input_valid_loop
+binary_input_not_valid:
+	mov eax, 0
+	pop ebp
+	ret
+binary_sequence_valid:
+	mov eax, 1
+	pop ebp
+	ret
+
 is_decimal_input_valid:
 	push ebp
 	mov ebp, esp
@@ -593,6 +622,26 @@ from_hexadecimal_to:
 	
 	
 from_decimal_to_decimal:
+	; Validate input
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_decimal_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	push value_entered
+	call convert_string_to_decimal
+	add esp, 8
+	cmp ecx, 255
+	jg conversion_failed
+	cmp ecx, 0
+	jl conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -604,7 +653,6 @@ from_decimal_to_decimal:
 
 from_decimal_to_binary:
 	; Validate input
-	; 1020 is the largest decimal that can be converted into binary
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -613,7 +661,6 @@ from_decimal_to_binary:
 	add esp, 4
 	cmp eax, 0
 	je conversion_failed
-here:	
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -647,6 +694,26 @@ here:
 	jmp end
 
 from_decimal_to_hexadecimal:
+	; Validate input
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_decimal_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	push value_entered
+	call convert_string_to_decimal
+	add esp, 8
+	cmp ecx, 255
+	jg conversion_failed
+	cmp ecx, 0
+	jl conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -669,6 +736,15 @@ from_decimal_to_hexadecimal:
 	jmp end
 
 from_binary_to_decimal:
+	; validate binary input
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_binary_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -691,6 +767,15 @@ from_binary_to_decimal:
 	jmp end
 
 from_binary_to_binary:
+	; validate binary input
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_binary_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
@@ -701,6 +786,15 @@ from_binary_to_binary:
 	jmp end
 
 from_binary_to_hexadecimal:
+	; validate binary input
+	push value_entered
+	call get_message_length
+	add esp, 4
+	push eax
+	call is_binary_input_valid
+	add esp, 4
+	cmp eax, 0
+	je conversion_failed
 	push value_entered
 	call get_message_length
 	add esp, 4
